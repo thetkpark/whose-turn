@@ -2,7 +2,7 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import app from './app'
 import { establishDbConnection } from './model/mongoose'
-import { setName, setJoinUser, getUserRoomPin } from './util/redis'
+import { setName, setJoinUser, getUserRoomPin, getRoomCount, setRoomCount } from './util/redis'
 
 const port = process.env.PORT || 4050
 
@@ -25,8 +25,18 @@ io.on('connection', (socket: Socket) => {
 
 	socket.on('start', async () => {
 		const roomPin = await getUserRoomPin(socket.id)
-		console.log('Start from ' + roomPin)
+		await setRoomCount(roomPin, 1)
+		console.log('Start' + roomPin)
 		socket.broadcast.to(roomPin).emit('start')
+	})
+
+	socket.on('next', async () => {
+		const roomPin = await getUserRoomPin(socket.id)
+		let roomCount = await getRoomCount(roomPin)
+		roomCount += 1
+		socket.broadcast.to(roomPin).emit('next', roomCount)
+		console.log(`next ${roomCount}`)
+		await setRoomCount(roomPin, roomCount)
 	})
 })
 
