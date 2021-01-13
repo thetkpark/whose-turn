@@ -6,10 +6,12 @@
 		<title>Document</title>
 	</head>
 	<body>
+		<input type="number" placeholder="pin" id="room-pin-input" />
+		<input type="text" placeholder="name" id="name-input" />
+		<button id="join-btn">Join</button>
+		<button id="start-btn">Start</button>
+		<div id="display"></div>
 		<script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
-		<script>
-			const socket = io('http://localhost:4050')
-			socket.emit('set-name', '3269', 'C')
-		</script>
+		<script src="script.js"></script>
 	</body>
 </html>

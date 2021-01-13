@@ -2,7 +2,7 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import app from './app'
 import { establishDbConnection } from './model/mongoose'
-import { setName } from './util/redis'
+import { setName, setJoinUser, getUserRoomPin } from './util/redis'
 
 const port = process.env.PORT || 4050
 
@@ -15,8 +15,20 @@ const io = new Server(httpServer, {
 
 io.on('connection', (socket: Socket) => {
 	console.log(`${socket.id} connected`)
+	socket.emit('user-join', 'User joined', 'something')
 	socket.on('set-name', async (pin: string, name: string) => {
-		await setName(pin, name, socket.id)
+		const roomMember = await setName(pin, name, socket.id)
+		await setJoinUser(pin, socket.id)
+		socket.join(pin)
+		socket.emit('user-join', `${name} has join the room`, roomMember)
+		socket.broadcast.to(pin).emit('user-join', `${name} has join the room`, roomMember)
+	})
+
+	socket.on('start', async () => {
+		const roomPin = await getUserRoomPin(socket.id)
+		console.log('Start from ' + roomPin)
+		socket.emit('start')
+		socket.broadcast.to(roomPin).emit('start')
 	})
 })
 
