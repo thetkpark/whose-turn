@@ -34,15 +34,18 @@ io.on('connection', (socket: Socket) => {
 		const roomPin = await getUserRoomPin(socket.id)
 		const roomMember = await getRoomMembers(roomPin)
 		let roomCount = await getRoomCount(roomPin)
-		roomCount += 1
-		if (roomCount <= roomMember.length) {
-			// Keep going
-			socket.broadcast.to(roomPin).emit('next', roomCount)
-			console.log(`next ${roomCount}`)
-			await setRoomCount(roomPin, roomCount)
-		} else {
-			socket.emit('end')
-			socket.broadcast.to(roomPin).emit('end')
+		if (roomMember[roomCount - 1].socketId === socket.id) {
+			roomCount += 1
+			if (roomCount <= roomMember.length) {
+				// Keep going
+				socket.emit('next', roomCount)
+				socket.broadcast.to(roomPin).emit('next', roomCount)
+				console.log(`next ${roomCount}`)
+				await setRoomCount(roomPin, roomCount)
+			} else {
+				socket.emit('end')
+				socket.broadcast.to(roomPin).emit('end')
+			}
 		}
 	})
 })
