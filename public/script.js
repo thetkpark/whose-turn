@@ -38,3 +38,7 @@ socket.on('next', number => {
 	console.log(current)
 	document.getElementById('display').textContent = JSON.stringify(members[current - 1])
 })
+
+socket.on('end', () => {
+	document.getElementById('display').textContent = 'FINISHED'
+})
