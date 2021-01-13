@@ -1,6 +1,7 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import app from './app'
+import { establishDbConnection } from './model/mongoose'
 
 const port = process.env.PORT || 4050
 
@@ -19,6 +20,12 @@ io.on('connection', (socket: Socket) => {
 	})
 })
 
-httpServer.listen(port, () => {
-	console.log(`Running on ${port}`)
-})
+establishDbConnection()
+	.then(() => {
+		httpServer.listen(port, () => {
+			console.log(`Running on ${port}`)
+		})
+	})
+	.catch(err => {
+		console.error(err)
+	})
