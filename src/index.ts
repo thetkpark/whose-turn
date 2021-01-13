@@ -15,7 +15,6 @@ const io = new Server(httpServer, {
 
 io.on('connection', (socket: Socket) => {
 	console.log(`${socket.id} connected`)
-	socket.emit('user-join', 'User joined', 'something')
 	socket.on('set-name', async (pin: string, name: string) => {
 		const roomMember = await setName(pin, name, socket.id)
 		await setJoinUser(pin, socket.id)
@@ -27,7 +26,6 @@ io.on('connection', (socket: Socket) => {
 	socket.on('start', async () => {
 		const roomPin = await getUserRoomPin(socket.id)
 		console.log('Start from ' + roomPin)
-		socket.emit('start')
 		socket.broadcast.to(roomPin).emit('start')
 	})
 })
