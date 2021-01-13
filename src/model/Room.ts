@@ -1,12 +1,24 @@
-import { Schema, model } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 
-const roomSchema = new Schema({
+interface IRoom {
+	name: String
+	members: [String]
+	pin: String
+	createAt: Date
+}
+
+interface IRoomDoc extends IRoom, Document {}
+
+const roomSchemaField: Record<keyof IRoom, any> = {
 	name: String,
 	members: [String],
+	pin: String,
 	createAt: {
 		type: Date,
 		default: Date.now()
 	}
-})
+}
 
-export const Room = model('room', roomSchema)
+const roomSchema = new Schema(roomSchemaField)
+
+export const Room = model<IRoomDoc>('room', roomSchema)
