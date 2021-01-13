@@ -35,8 +35,19 @@ export async function setJoinUser(pin: string, socketId: string) {
 	await redis.set(socketId, pin)
 }
 
-export async function getUserRoomPin(sockerId: string) {
-	const roomPin = await redis.get(sockerId)
+export async function removeDisconnectUser(socketId: string) {
+	const roomPin = await redis.get(socketId)
+	if (!roomPin) return null
+	const roomMembers = await getRoomMembers(roomPin)
+	const memberIndex = roomMembers.findIndex(member => member.socketId === socketId)
+	roomMembers[memberIndex].socketId = undefined
+	const roomMembersString = JSON.stringify(roomMembers)
+	await redis.set(`${roomPin}_member`, roomMembersString)
+	return { roomMembersString, roomPin }
+}
+
+export async function getUserRoomPin(socketId: string) {
+	const roomPin = await redis.get(socketId)
 	if (!roomPin) throw new Error('Room not found for this user')
 	return roomPin
 }

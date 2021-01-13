@@ -2,7 +2,15 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import app from './app'
 import { establishDbConnection } from './model/mongoose'
-import { setName, setJoinUser, getUserRoomPin, getRoomCount, setRoomCount, getRoomMembers } from './util/redis'
+import {
+	setName,
+	setJoinUser,
+	getUserRoomPin,
+	getRoomCount,
+	setRoomCount,
+	getRoomMembers,
+	removeDisconnectUser
+} from './util/redis'
 
 const port = process.env.PORT || 4050
 
@@ -16,18 +24,23 @@ const io = new Server(httpServer, {
 io.on('connection', (socket: Socket) => {
 	console.log(`${socket.id} connected`)
 	socket.on('set-name', async (pin: string, name: string) => {
-		const roomMember = await setName(pin, name, socket.id)
+		const roomMemberString = await setName(pin, name, socket.id)
 		await setJoinUser(pin, socket.id)
 		socket.join(pin)
-		socket.emit('user-join', `${name} has join the room`, roomMember)
-		socket.broadcast.to(pin).emit('user-join', `${name} has join the room`, roomMember)
+		socket.emit('user-join', `${name} has join the room`, roomMemberString)
+		socket.broadcast.to(pin).emit('user-join', `${name} has join the room`, roomMemberString)
 	})
 
 	socket.on('start', async () => {
 		const roomPin = await getUserRoomPin(socket.id)
-		await setRoomCount(roomPin, 1)
-		console.log('Start' + roomPin)
-		socket.broadcast.to(roomPin).emit('start')
+		const roomMember = await getRoomMembers(roomPin)
+		if (roomMember.every(member => member.socketId)) {
+			await setRoomCount(roomPin, 1)
+			console.log('Start' + roomPin)
+			socket.broadcast.to(roomPin).emit('start')
+		} else {
+			socket.emit('error', 'Not every member has joined')
+		}
 	})
 
 	socket.on('next', async () => {
@@ -47,6 +60,11 @@ io.on('connection', (socket: Socket) => {
 				socket.broadcast.to(roomPin).emit('end')
 			}
 		}
+	})
+
+	socket.on('disconnect', async () => {
+		const rooms = await removeDisconnectUser(socket.id)
+		if (rooms) socket.broadcast.to(rooms.roomPin).emit('user-out', rooms.roomMembersString)
 	})
 })
 

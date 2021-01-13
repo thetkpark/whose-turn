@@ -21,8 +21,12 @@ document.getElementById('next-btn').addEventListener('click', () => {
 })
 
 socket.on('user-join', (msg, roomMember) => {
-	console.log('Recieved')
 	document.getElementById('display').textContent = msg + ' ' + roomMember
+	members = JSON.parse(roomMember)
+})
+
+socket.on('user-out', roomMember => {
+	document.getElementById('display').textContent = roomMember
 	members = JSON.parse(roomMember)
 })
 
@@ -42,4 +46,8 @@ socket.on('next', number => {
 
 socket.on('end', () => {
 	document.getElementById('display').textContent = 'FINISHED'
+})
+
+socket.on('error', msg => {
+	document.getElementById('display').textContent = msg
 })
