@@ -2,25 +2,24 @@ import express, { Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import { Room } from './model/Room'
 import { generateId } from './util/nanoid'
-import { Query } from 'mongoose'
-import redis from './util/redis'
+import { getRoomMembers, initRoomMembers } from './util/redis'
+import { RoomMember } from './types'
 
 const app = express()
 
 app.use(bodyParser.json())
 
-type reqBodyFrom = {
+type reqBodyCreateRoom = {
 	name: string
 	members: string[]
 }
 
-interface RoomMember {
-	name: string
-	socketId?: string
-	isIn: boolean
-}
+// type reqBodyJoinMember = {
+//     name: string,
 
-app.post('/api/room', async (req: Request<{}, {}, reqBodyFrom>, res: Response) => {
+// }
+
+app.post('/api/room', async (req: Request<{}, {}, reqBodyCreateRoom>, res: Response) => {
 	const pin = generateId()
 	const room = {
 		...req.body,
@@ -28,9 +27,7 @@ app.post('/api/room', async (req: Request<{}, {}, reqBodyFrom>, res: Response) =
 	}
 	await Room.create(room)
 
-	const roomMembers: RoomMember[] = []
-	room.members.forEach(member => roomMembers.push({ isIn: false, name: member, socketId: undefined }))
-	await redis.set(pin, JSON.stringify(roomMembers))
+	await initRoomMembers(pin, room.members)
 
 	res.status(201).send(room)
 })
@@ -40,11 +37,13 @@ app.get('/api/room/:pin', async (req, res) => {
 	const room = await Room.findOne({ pin })
 	if (!room) return res.status(400).send({ error: 'Room not found' })
 
-	const roomMemberString = await redis.get(pin)
-	if (!roomMemberString) return res.status(400).send({ error: 'Room member not found' })
-	const roomMember: RoomMember[] = JSON.parse(roomMemberString)
+	const roomMember = await getRoomMembers(pin)
 
 	res.send(roomMember)
 })
+
+// app.patch('/api/room/:pin', async (req, res) => {
+//     const { pin } = req.params
+// })
 
 export default app
