@@ -6,7 +6,7 @@ let members = []
 document.getElementById('get-room-btn').addEventListener('click', () => {
 	const pin = document.getElementById('room-pin-input').value
 	axios.get(`http://localhost:4050/api/room/${pin}`).then(res => {
-		const avaliableUser = res.data.filter(member => !member.socketId)
+		const avaliableUser = res.data.members.filter(member => !member.socketId)
 		let htmlNameOption = ''
 		avaliableUser.forEach(user => (htmlNameOption += `<option value="${user.name}">${user.name}</option>`))
 		document.getElementById('select-name').innerHTML = htmlNameOption

@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import RoomModel from './model/Room'
 import { generateId } from './util/nanoid'
-import { getRoomMembers, initRoom } from './util/redis'
+import { getRoom, getRoomMembers, initRoom, isPinUnique } from './util/redis'
 import cors from 'cors'
 import { Room, RoomMember } from './types'
 
@@ -23,7 +23,12 @@ type reqBodyCreateRoom = {
 
 app.post('/api/room', async (req: Request<{}, {}, reqBodyCreateRoom>, res: Response) => {
 	try {
-		const pin = generateId()
+		let pin: string = ''
+		let unique = false
+		while (!unique) {
+			pin = generateId()
+			unique = await isPinUnique(pin)
+		}
 
 		const roomMembers: RoomMember[] = []
 		req.body.members.forEach(member => roomMembers.push({ name: member, socketId: undefined }))
@@ -33,8 +38,13 @@ app.post('/api/room', async (req: Request<{}, {}, reqBodyCreateRoom>, res: Respo
 			pin,
 			members: roomMembers
 		}
-		await RoomModel.create(room)
-		await initRoom(room)
+		await Promise.all([
+			RoomModel.create({
+				...req.body,
+				pin
+			}),
+			initRoom(room)
+		])
 		res.status(201).send(room)
 	} catch (error) {
 		res.status(500).send(error)
@@ -44,19 +54,12 @@ app.post('/api/room', async (req: Request<{}, {}, reqBodyCreateRoom>, res: Respo
 app.get('/api/room/:pin', async (req, res) => {
 	try {
 		const { pin } = req.params
-		const room = await RoomModel.findOne({ pin }).sort({ createAt: 'desc' })
+		const room = await getRoom(pin)
 		if (!room) return res.status(400).send({ error: 'Room not found' })
-		console.log(room)
-		const roomMember = await getRoomMembers(pin)
-
-		res.send(roomMember)
+		res.send(room)
 	} catch (error) {
 		res.status(500).send(error)
 	}
 })
-
-// app.patch('/api/room/:pin', async (req, res) => {
-//     const { pin } = req.params
-// })
 
 export default app

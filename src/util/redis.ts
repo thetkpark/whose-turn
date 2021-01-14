@@ -8,16 +8,27 @@ const redisOption: RedisOptions = {
 
 const redis = new Redis(redisOption)
 
-export async function getRoomMembers(pin: string) {
-	const roomMemberString = await redis.get(`${pin}_member`)
-	if (!roomMemberString) throw new Error('Room member not found')
-	const roomMember: RoomMember[] = JSON.parse(roomMemberString)
-	return roomMember
+export async function isPinUnique(pin: string) {
+	const existingPin = await redis.get(pin)
+	return !existingPin ? true : false
 }
 
 export async function initRoom(room: Room) {
 	await redis.set(room.pin, JSON.stringify(room))
 	await redis.set(`${room.pin}_member`, JSON.stringify(room.members))
+}
+
+export async function getRoom(pin: string): Promise<Room | null> {
+	const roomString = await redis.get(pin)
+	if (!roomString) return null
+	return JSON.parse(roomString)
+}
+
+export async function getRoomMembers(pin: string) {
+	const roomMemberString = await redis.get(`${pin}_member`)
+	if (!roomMemberString) throw new Error('Room member not found')
+	const roomMember: RoomMember[] = JSON.parse(roomMemberString)
+	return roomMember
 }
 
 export async function setName(pin: string, name: string, socketId: string) {
