@@ -1,5 +1,5 @@
 import Redis, { RedisOptions } from 'ioredis'
-import { RoomMember } from '../types'
+import { Room, RoomMember } from '../types'
 
 const redisOption: RedisOptions = {
 	host: 'localhost',
@@ -15,11 +15,9 @@ export async function getRoomMembers(pin: string) {
 	return roomMember
 }
 
-export async function initRoomMembers(pin: string, members: string[]) {
-	const roomMembers: RoomMember[] = []
-	members.forEach(member => roomMembers.push({ name: member, socketId: undefined }))
-
-	await redis.set(`${pin}_member`, JSON.stringify(roomMembers))
+export async function initRoom(room: Room) {
+	await redis.set(room.pin, JSON.stringify(room))
+	await redis.set(`${room.pin}_member`, JSON.stringify(room.members))
 }
 
 export async function setName(pin: string, name: string, socketId: string) {

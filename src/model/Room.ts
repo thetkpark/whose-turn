@@ -15,10 +15,12 @@ const roomSchemaField: Record<keyof IRoom, any> = {
 	pin: String,
 	createAt: {
 		type: Date,
-		default: Date.now()
+		default: Date.now
 	}
 }
 
 const roomSchema = new Schema(roomSchemaField)
 
-export const Room = model<IRoomDoc>('room', roomSchema)
+const Room = model<IRoomDoc>('room', roomSchema)
+
+export default Room

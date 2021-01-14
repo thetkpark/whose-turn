@@ -3,3 +3,9 @@ export interface RoomMember {
 	socketId?: string
 	// isIn: boolean
 }
+
+export interface Room {
+	name: string
+	pin: string
+	members: RoomMember[]
+}
