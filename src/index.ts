@@ -22,7 +22,7 @@ const io = new Server(httpServer, {
 })
 
 io.on('connection', (socket: Socket) => {
-	console.log(`${socket.id} connected`)
+	// console.log(`${socket.id} connected`)
 	socket.on('set-name', async (pin: string, name: string) => {
 		const roomMembers = await getRoomMembers(pin)
 		const nameIsUsed = roomMembers.some(member => member.name === name && member.socketId)
@@ -33,7 +33,7 @@ io.on('connection', (socket: Socket) => {
 			socket.emit('user-join', `${name} has join the room`, roomMemberString)
 			socket.broadcast.to(pin).emit('user-join', `${name} has join the room`, roomMemberString)
 		} else {
-			socket.emit('error', `${name} is used`)
+			socket.emit('error', `${name} is in use`)
 		}
 	})
 
@@ -42,7 +42,7 @@ io.on('connection', (socket: Socket) => {
 		const roomMember = await getRoomMembers(roomPin)
 		if (roomMember.every(member => member.socketId)) {
 			await setRoomCount(roomPin, 1)
-			console.log('Start' + roomPin)
+			// console.log('Start' + roomPin)
 			socket.emit('start')
 			socket.broadcast.to(roomPin).emit('start')
 		} else {
