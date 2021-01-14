@@ -14,7 +14,7 @@ export async function isPinUnique(pin: string) {
 }
 
 export async function initRoom(room: Room) {
-	await redis.set(room.pin, JSON.stringify(room))
+	await redis.set(room.pin, JSON.stringify(room), 'EX', 86400)
 	// await redis.set(`${room.pin}_member`, JSON.stringify(room.members))
 }
 
@@ -37,12 +37,12 @@ export async function setName(pin: string, name: string, socketId: string) {
 	const memberIndex = room.members.findIndex(member => member.name === name)
 	room.members[memberIndex].socketId = socketId
 	const roomString = JSON.stringify(room)
-	await redis.set(pin, roomString)
+	await redis.set(pin, roomString, 'EX', 86400)
 	return JSON.stringify(room.members)
 }
 
 export async function setJoinUser(pin: string, socketId: string) {
-	await redis.set(socketId, pin)
+	await redis.set(socketId, pin, 'EX', 86400)
 }
 
 export async function removeDisconnectUser(socketId: string) {
@@ -53,7 +53,7 @@ export async function removeDisconnectUser(socketId: string) {
 	const memberIndex = room.members.findIndex(member => member.socketId === socketId)
 	room[memberIndex].socketId = undefined
 	const roomString = JSON.stringify(room)
-	await redis.set(roomPin, roomString)
+	await redis.set(roomPin, roomString, 'EX', 86400)
 
 	const roomMembersString = JSON.stringify(room.members)
 	return { roomMembersString, roomPin }
@@ -66,7 +66,7 @@ export async function getUserRoomPin(socketId: string) {
 }
 
 export async function setRoomCount(pin: string, count: number) {
-	await redis.set(`${pin}_count`, count)
+	await redis.set(`${pin}_count`, count, 'EX', 86400)
 }
 
 export async function getRoomCount(pin: string) {
