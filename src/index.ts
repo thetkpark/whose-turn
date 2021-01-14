@@ -37,6 +37,7 @@ io.on('connection', (socket: Socket) => {
 		if (roomMember.every(member => member.socketId)) {
 			await setRoomCount(roomPin, 1)
 			console.log('Start' + roomPin)
+			socket.emit('start')
 			socket.broadcast.to(roomPin).emit('start')
 		} else {
 			socket.emit('error', 'Not every member has joined')

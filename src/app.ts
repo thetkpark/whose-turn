@@ -3,10 +3,11 @@ import bodyParser from 'body-parser'
 import { Room } from './model/Room'
 import { generateId } from './util/nanoid'
 import { getRoomMembers, initRoomMembers } from './util/redis'
-import { RoomMember } from './types'
+import cors from 'cors'
 
 const app = express()
 
+app.use(cors())
 app.use(bodyParser.json())
 
 type reqBodyCreateRoom = {

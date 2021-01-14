@@ -4,15 +4,35 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Document</title>
+		<script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+			crossorigin="anonymous"
+		/>
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+			integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+			crossorigin="anonymous"
+		></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	</head>
 	<body>
-		<input type="number" placeholder="pin" id="room-pin-input" />
-		<input type="text" placeholder="name" id="name-input" />
-		<button id="join-btn">Join</button>
-		<button id="start-btn">Start</button>
-		<button id="next-btn">Next</button>
-		<div id="display"></div>
-		<script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+		<div id="outline">
+			<div>
+				<input type="number" placeholder="pin" id="room-pin-input" />
+				<select id="select-name" name="name"></select>
+				<button id="get-room-btn" class="btn btn-outline-primary">Get Room</button>
+				<button id="join-btn" class="btn btn-outline-primary">Join</button>
+				<button id="start-btn" class="btn btn-outline-primary" disabled>Start</button>
+				<button id="next-btn" class="btn btn-success" disabled>Next</button>
+				<div id="display"></div>
+			</div>
+			<div id="member-display"></div>
+		</div>
+
+		<link rel="stylesheet" href="style.css" />
 		<script src="script.js"></script>
 	</body>
 </html>
