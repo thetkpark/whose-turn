@@ -60,7 +60,6 @@ io.on('connection', (socket: Socket) => {
 				// Keep going
 				socket.emit('next', roomCount)
 				socket.broadcast.to(roomPin).emit('next', roomCount)
-				console.log(`next ${roomCount}`)
 				await setRoomCount(roomPin, roomCount)
 			} else {
 				socket.emit('end')

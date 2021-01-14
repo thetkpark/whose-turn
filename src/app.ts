@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit'
 import routers from './routes'
 
 const app = express()
+app.use(express.static('public'))
 
 app.set('trust proxy', 1)
 app.use(cors())

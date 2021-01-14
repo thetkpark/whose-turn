@@ -1,11 +1,11 @@
-const socket = io('http://localhost:4050')
+const socket = io()
 let current = 0
 let myname = ''
 let members = []
 
 document.getElementById('get-room-btn').addEventListener('click', () => {
 	const pin = document.getElementById('room-pin-input').value
-	axios.get(`http://localhost:4050/api/room/${pin}`).then(res => {
+	axios.get(`/api/room/${pin}`).then(res => {
 		const avaliableUser = res.data.members.filter(member => !member.socketId)
 		let htmlNameOption = ''
 		avaliableUser.forEach(user => (htmlNameOption += `<option value="${user.name}">${user.name}</option>`))
