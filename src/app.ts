@@ -1,14 +1,24 @@
 import express, { Request, Response } from 'express'
 import bodyParser from 'body-parser'
+import cors from 'cors'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 import RoomModel from './model/Room'
 import { generateId } from './util/nanoid'
 import { getRoom, initRoom, isPinUnique } from './util/redis'
-import cors from 'cors'
-import { Room, RoomMember } from './types'
+import { Room } from './types'
 
 const app = express()
 
+app.set('trust proxy', 1)
 app.use(cors())
+app.use(helmet())
+app.use(
+	rateLimit({
+		windowMs: 1000,
+		max: 10
+	})
+)
 app.use(bodyParser.json())
 
 type reqBodyCreateRoom = {
