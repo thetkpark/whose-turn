@@ -24,11 +24,17 @@ const io = new Server(httpServer, {
 io.on('connection', (socket: Socket) => {
 	console.log(`${socket.id} connected`)
 	socket.on('set-name', async (pin: string, name: string) => {
-		const roomMemberString = await setName(pin, name, socket.id)
-		await setJoinUser(pin, socket.id)
-		socket.join(pin)
-		socket.emit('user-join', `${name} has join the room`, roomMemberString)
-		socket.broadcast.to(pin).emit('user-join', `${name} has join the room`, roomMemberString)
+		const roomMembers = await getRoomMembers(pin)
+		const nameIsUsed = roomMembers.some(member => member.name === name && member.socketId)
+		if (!nameIsUsed) {
+			const roomMemberString = await setName(pin, name, socket.id)
+			await setJoinUser(pin, socket.id)
+			socket.join(pin)
+			socket.emit('user-join', `${name} has join the room`, roomMemberString)
+			socket.broadcast.to(pin).emit('user-join', `${name} has join the room`, roomMemberString)
+		} else {
+			socket.emit('error', `${name} is used`)
+		}
 	})
 
 	socket.on('start', async () => {
