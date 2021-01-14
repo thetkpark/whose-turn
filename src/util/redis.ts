@@ -51,7 +51,7 @@ export async function removeDisconnectUser(socketId: string) {
 	const room = await getRoom(roomPin)
 	if (!room) throw new Error('Room not found')
 	const memberIndex = room.members.findIndex(member => member.socketId === socketId)
-	room[memberIndex].socketId = undefined
+	room.members[memberIndex].socketId = undefined
 	const roomString = JSON.stringify(room)
 	await redis.set(roomPin, roomString, 'EX', 86400)
 
