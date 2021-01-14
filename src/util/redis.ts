@@ -15,7 +15,7 @@ export async function isPinUnique(pin: string) {
 
 export async function initRoom(room: Room) {
 	await redis.set(room.pin, JSON.stringify(room))
-	await redis.set(`${room.pin}_member`, JSON.stringify(room.members))
+	// await redis.set(`${room.pin}_member`, JSON.stringify(room.members))
 }
 
 export async function getRoom(pin: string): Promise<Room | null> {
@@ -25,19 +25,20 @@ export async function getRoom(pin: string): Promise<Room | null> {
 }
 
 export async function getRoomMembers(pin: string) {
-	const roomMemberString = await redis.get(`${pin}_member`)
-	if (!roomMemberString) throw new Error('Room member not found')
-	const roomMember: RoomMember[] = JSON.parse(roomMemberString)
-	return roomMember
+	const roomString = await redis.get(pin)
+	if (!roomString) throw new Error('Room not found')
+	const room: Room = JSON.parse(roomString)
+	return room.members
 }
 
 export async function setName(pin: string, name: string, socketId: string) {
-	const roomMembers = await getRoomMembers(pin)
-	const memberIndex = roomMembers.findIndex(member => member.name === name)
-	roomMembers[memberIndex].socketId = socketId
-	const roomMembersString = JSON.stringify(roomMembers)
-	await redis.set(`${pin}_member`, roomMembersString)
-	return roomMembersString
+	const room = await getRoom(pin)
+	if (!room) throw new Error('Room not found')
+	const memberIndex = room.members.findIndex(member => member.name === name)
+	room.members[memberIndex].socketId = socketId
+	const roomString = JSON.stringify(room)
+	await redis.set(pin, roomString)
+	return JSON.stringify(room.members)
 }
 
 export async function setJoinUser(pin: string, socketId: string) {
@@ -47,11 +48,14 @@ export async function setJoinUser(pin: string, socketId: string) {
 export async function removeDisconnectUser(socketId: string) {
 	const roomPin = await redis.get(socketId)
 	if (!roomPin) return null
-	const roomMembers = await getRoomMembers(roomPin)
-	const memberIndex = roomMembers.findIndex(member => member.socketId === socketId)
-	roomMembers[memberIndex].socketId = undefined
-	const roomMembersString = JSON.stringify(roomMembers)
-	await redis.set(`${roomPin}_member`, roomMembersString)
+	const room = await getRoom(roomPin)
+	if (!room) throw new Error('Room not found')
+	const memberIndex = room.members.findIndex(member => member.socketId === socketId)
+	room[memberIndex].socketId = undefined
+	const roomString = JSON.stringify(room)
+	await redis.set(roomPin, roomString)
+
+	const roomMembersString = JSON.stringify(room.members)
 	return { roomMembersString, roomPin }
 }
 

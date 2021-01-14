@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import RoomModel from './model/Room'
 import { generateId } from './util/nanoid'
-import { getRoom, getRoomMembers, initRoom, isPinUnique } from './util/redis'
+import { getRoom, initRoom, isPinUnique } from './util/redis'
 import cors from 'cors'
 import { Room, RoomMember } from './types'
 
@@ -15,11 +15,6 @@ type reqBodyCreateRoom = {
 	name: string
 	members: string[]
 }
-
-// type reqBodyJoinMember = {
-//     name: string,
-
-// }
 
 app.post('/api/room', async (req: Request<{}, {}, reqBodyCreateRoom>, res: Response) => {
 	try {
